@@ -43,6 +43,40 @@ let governmentShares = 0; // Udziały (procent bonusu)
         return Object.values(countryData.buildings).reduce((acc, b) => acc + (b.count * (b.income >= 1 ? b.income : (b.price * b.income))), 0);
     }
 
+    // Kupowanie udziałów (zwiększa mnożnik zarobków)
+window.buyShares = function() {
+    let cost = 1000000000; // Koszt 1 udziału (np. 1 mld)
+    if (money >= cost) {
+        money -= cost;
+        governmentShares += 1;
+        updateDisplay();
+    }
+};
+
+// Resetowanie gry (Prestiż)
+window.prestige = function() {
+    // Warunek: musisz mieć np. min. 100 mln w gotówce, żeby zresetować
+    if (money >= 100000000) {
+        prestigePoints += Math.floor(money / 10000000); 
+        money = 0;
+        governmentShares = 0;
+        // Resetujemy budynki
+        for (let key in countryData.buildings) {
+            countryData.buildings[key].count = 0;
+        }
+        updateDisplay();
+    }
+};
+
+// Zmodyfikowana funkcja dochodu (uwzględnia bonus z udziałów)
+function getPassiveIncome() {
+    let baseIncome = Object.values(countryData.buildings).reduce((acc, b) => acc + (b.count * (b.income >= 1 ? b.income : (b.price * b.income))), 0);
+    // Każdy udział daje +10% do zarobków
+    let bonus = 1 + (governmentShares * 0.1); 
+    return baseIncome * bonus;
+}
+    
+    
     function updateDisplay() {
         document.getElementById('money').innerText = `Pieniądze: ${Math.floor(money).toLocaleString()} zł`;
         document.getElementById('income-display').innerText = `Zarobek: ${Math.floor(getPassiveIncome()).toLocaleString()} zł/s`;
