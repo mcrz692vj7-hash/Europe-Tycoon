@@ -1,8 +1,7 @@
 (function() {
-    console.log("Skrypt załadowany poprawnie!");
-
     let money = 0;
-    const clickValue = 0.5;
+    let baseClickValue = 0.5;
+    let clickUpgrades = 0; 
     let prestigePoints = 0;
     let governmentShares = 0;
 
@@ -20,22 +19,19 @@
 
     let buyMode = 1;
 
-    // --- ZAPIS I WCZYTYWANIE ---
-    function saveGame() { 
-        localStorage.setItem('clickerSave', JSON.stringify({money, countryData, prestigePoints, governmentShares})); 
-    }
-    
-    function loadGame() {
-        let save = JSON.parse(localStorage.getItem('clickerSave'));
-        if (save) { 
-            money = save.money || 0; 
-            countryData = save.countryData || countryData; 
-            prestigePoints = save.prestigePoints || 0;
-            governmentShares = save.governmentShares || 0;
-        }
+    // --- LOGIKA ---
+    function getClickValue() {
+        return baseClickValue + (clickUpgrades * 20);
     }
 
-    // --- LOGIKA GRY ---
+    function getPassiveIncome() {
+        let base = Object.values(countryData.buildings).reduce((acc, b) => acc + (b.count * (b.income >= 1 ? b.income : (b.price * b.income))), 0);
+        let prestigeBonus = 1 + (prestigePoints * 0.05); // +5% za punkt
+        let sharesBonus = 1 + (governmentShares * 0.1);  // +10% za udział
+        return base * prestigeBonus * sharesBonus;
+    }
+
+    // --- FUNKCJE GLOBALNE ---
     window.setBuyMode = (mode) => { buyMode = mode; updateDisplay(); };
 
     window.buyBuilding = (type) => {
@@ -49,11 +45,20 @@
         }
     };
 
-    window.buyShares = () => {
-        let cost = 1000000000;
-        if (money >= cost) {
+    window.upgradeClick = () => {
+        let cost = 5000 * (clickUpgrades + 1);
+        if (clickUpgrades < 50 && money >= cost) {
             money -= cost;
-            governmentShares += 1;
+            clickUpgrades++;
+            saveGame();
+            updateDisplay();
+        }
+    };
+
+    window.buyShares = () => {
+        if (governmentShares < 100 && money >= 1000000000) {
+            money -= 1000000000;
+            governmentShares++;
             saveGame();
             updateDisplay();
         }
@@ -61,26 +66,37 @@
 
     window.prestige = () => {
         if (money >= 100000000) {
-            prestigePoints += Math.floor(money / 10000000);
+            prestigePoints += 1;
             money = 0;
             governmentShares = 0;
+            clickUpgrades = 0;
             for (let key in countryData.buildings) countryData.buildings[key].count = 0;
             saveGame();
             updateDisplay();
         }
     };
 
-    function getPassiveIncome() {
-        let base = Object.values(countryData.buildings).reduce((acc, b) => acc + (b.count * (b.income >= 1 ? b.income : (b.price * b.income))), 0);
-        return base * (1 + (governmentShares * 0.1));
+    // --- ZAPIS / WCZYTYWANIE ---
+    function saveGame() { 
+        localStorage.setItem('clickerSave', JSON.stringify({money, countryData, prestigePoints, governmentShares, clickUpgrades})); 
+    }
+    
+    function loadGame() {
+        let save = JSON.parse(localStorage.getItem('clickerSave'));
+        if (save) { 
+            money = save.money || 0; 
+            countryData = save.countryData || countryData; 
+            prestigePoints = save.prestigePoints || 0;
+            governmentShares = save.governmentShares || 0;
+            clickUpgrades = save.clickUpgrades || 0;
+        }
     }
 
-    // --- INTERFEJS ---
+    // --- UI ---
     function updateDisplay() {
         document.getElementById('money').innerText = `Pieniądze: ${Math.floor(money).toLocaleString()} zł`;
         document.getElementById('income-display').innerText = `Zarobek: ${Math.floor(getPassiveIncome()).toLocaleString()} zł/s`;
-        document.getElementById('current-mode').innerText = `Aktualnie: x${buyMode}`;
-
+        
         const tbody = document.getElementById('building-body');
         tbody.innerHTML = '';
         for (let [key, b] of Object.entries(countryData.buildings)) {
@@ -91,18 +107,22 @@
                 <td>${b.price.toLocaleString()} zł</td>
                 <td>${b.count} / ${b.max}</td>
                 <td><button onclick="buyBuilding('${key}')" ${money < cost || b.count >= b.max ? 'disabled' : ''}>
-                    Kup ${buyMode === 'max' ? 'Max' : 'x' + buyMode}
+                    Kup
                 </button></td>
             </tr>`;
         }
+
         tbody.innerHTML += `<tr><td colspan="4" style="text-align:center; padding:10px;">
-            <button onclick="buyShares()">Kup Udział (1 mld zł) - Posiadasz: ${governmentShares}</button>
-            <button onclick="prestige()" style="background-color:red; color:white;">PRESTIŻ (+${Math.floor(money/10000000)} pkt)</button>
+            <p><strong>Bonusy:</strong> Prestiż (+${prestigePoints * 5}%) | Udziały (+${governmentShares * 10}%)</p>
+            <button onclick="upgradeClick()" ${clickUpgrades >= 50 ? 'disabled' : ''}>Klik (+20zł/lvl, ${clickUpgrades}/50)</button>
+            <button onclick="buyShares()" ${governmentShares >= 100 ? 'disabled' : ''}>Udział (1 mld, ${governmentShares}/100)</button>
+            <button onclick="prestige()" style="background-color:red; color:white;" ${money < 100000000 ? 'disabled' : ''}>
+                RESET (Prestiż +1)
+            </button>
         </td></tr>`;
     }
 
-    // --- START ---
-    document.getElementById('clickBtn').addEventListener('click', () => { money += clickValue; updateDisplay(); });
+    document.getElementById('clickBtn').addEventListener('click', () => { money += getClickValue(); updateDisplay(); });
     setInterval(() => { money += getPassiveIncome(); updateDisplay(); }, 1000);
     
     loadGame();
