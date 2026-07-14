@@ -14,23 +14,41 @@ let countryData = {
     }
 };
 
-// Logika pasywnego zarobku co sekundę
-setInterval(() => {
-    let passiveIncome = 0;
+// 1. ZAPISYWANIE I WCZYTYWANIE (System zapisu)
+function saveGame() {
+    localStorage.setItem('clickerSave', JSON.stringify({money, countryData}));
+}
+
+function loadGame() {
+    let save = JSON.parse(localStorage.getItem('clickerSave'));
+    if (save) {
+        money = save.money;
+        countryData = save.countryData;
+    }
+}
+
+// Obliczanie pasywnego zarobku
+function getPassiveIncome() {
+    let income = 0;
     for (let key in countryData.buildings) {
         let b = countryData.buildings[key];
-        if (b.income >= 1) {
-            passiveIncome += b.count * b.income;
-        } else {
-            passiveIncome += b.count * (b.price * b.income);
-        }
+        if (b.income >= 1) income += b.count * b.income;
+        else income += b.count * (b.price * b.income);
     }
-    money += passiveIncome;
+    return income;
+}
+
+// Pętla główna (zapis + zysk)
+setInterval(() => {
+    money += getPassiveIncome();
+    saveGame(); // Automatyczny zapis co sekundę
     updateDisplay();
 }, 1000);
 
 function updateDisplay() {
-    document.getElementById('money').innerText = `Pieniądze: ${money.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} zł`;
+    document.getElementById('money').innerText = `Pieniądze: ${money.toLocaleString()} zł`;
+    document.getElementById('income-display').innerText = `Zarobek: ${getPassiveIncome().toLocaleString()} zł/s`;
+    
     const tbody = document.getElementById('building-body');
     tbody.innerHTML = '';
     
@@ -61,5 +79,6 @@ function buyBuilding(type) {
     }
 }
 
-// Inicjalizacja wyświetlania przy starcie
+// Przy starcie wczytaj dane
+loadGame();
 updateDisplay();
