@@ -17,6 +17,16 @@
         
         <div id="shop">
             <h3>Sklep</h3>
+
+            <div id="buy-mode-selector">
+    <span>Tryb zakupu: </span>
+    <button onclick="setBuyMode(1)">x1</button>
+    <button onclick="setBuyMode(10)">x10</button>
+    <button onclick="setBuyMode(100)">x100</button>
+    <button onclick="setBuyMode('max')">MAX</button>
+    <strong id="current-mode">Aktualnie: x1</strong>
+</div>
+            
             <table id="building-table">
                 <thead>
                     <tr>
