@@ -76,7 +76,6 @@ function getPassiveIncome() {
     return baseIncome * bonus;
 }
     
-    
     function updateDisplay() {
         document.getElementById('money').innerText = `Pieniądze: ${Math.floor(money).toLocaleString()} zł`;
         document.getElementById('income-display').innerText = `Zarobek: ${Math.floor(getPassiveIncome()).toLocaleString()} zł/s`;
@@ -85,6 +84,7 @@ function getPassiveIncome() {
         const tbody = document.getElementById('building-body');
         tbody.innerHTML = '';
         
+        // 1. Wstawiamy budynki
         for (let [key, b] of Object.entries(countryData.buildings)) {
             let amount = (buyMode === 'max') ? Math.max(1, Math.min(Math.floor(money / b.price), b.max - b.count)) : buyMode;
             let cost = b.price * amount;
@@ -96,20 +96,19 @@ function getPassiveIncome() {
                     Kup ${buyMode === 'max' ? 'Max' : 'x' + buyMode}
                 </button></td>
             </tr>`;
-
-            // Wewnątrz updateDisplay, np. pod pętlą budynków:
-tbody.innerHTML += `
-    <tr>
-        <td colspan="4">
-            <button onclick="buyShares()">Kup Udział (1 mld zł) - Posiadasz: ${governmentShares}</button>
-            <button onclick="prestige()" style="background-color: red; color: white;">PRESTIŻ (+${Math.floor(money/10000000)} pkt)</button>
-        </td>
-    </tr>
-`;
-            
         }
-    }
 
+        // 2. Wstawiamy przyciski specjalne RAZ na końcu tabeli
+        tbody.innerHTML += `
+            <tr>
+                <td colspan="4" style="text-align: center; padding: 10px;">
+                    <button onclick="buyShares()">Kup Udział (1 mld zł) - Posiadasz: ${governmentShares}</button>
+                    <button onclick="prestige()" style="background-color: red; color: white;">PRESTIŻ (+${Math.floor(money/10000000)} pkt)</button>
+                </td>
+            </tr>
+        `;
+    }
+    
     function saveGame() { localStorage.setItem('clickerSave', JSON.stringify({money, countryData})); }
     
     function loadGame() {
@@ -126,3 +125,22 @@ tbody.innerHTML += `
     setInterval(() => { money += getPassiveIncome(); updateDisplay(); }, 1000);
     updateDisplay();
 })();
+
+function saveGame() { 
+        localStorage.setItem('clickerSave', JSON.stringify({
+            money, 
+            countryData, 
+            prestigePoints, 
+            governmentShares
+        })); 
+    }
+    
+    function loadGame() {
+        let save = JSON.parse(localStorage.getItem('clickerSave'));
+        if (save) { 
+            money = save.money; 
+            countryData = save.countryData; 
+            prestigePoints = save.prestigePoints || 0;
+            governmentShares = save.governmentShares || 0;
+        }
+    }
