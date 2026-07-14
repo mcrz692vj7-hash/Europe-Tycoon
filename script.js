@@ -14,6 +14,42 @@ let countryData = {
     }
 };
 
+let buyMode = 1;
+
+function setBuyMode(mode) {
+    buyMode = mode;
+    document.getElementById('current-mode').innerText = `Aktualnie: x${mode}`;
+    updateDisplay();
+}
+
+function buyBuilding(type) {
+    let b = countryData.buildings[type];
+    
+    // Obliczamy ile faktycznie możemy kupić w zależności od trybu
+    let amountToBuy = buyMode;
+    
+    if (buyMode === 'max') {
+        // Obliczamy max za ile nas stać i ile mamy miejsca do limitu
+        let canAfford = Math.floor(money / b.price);
+        let canFit = b.max - b.count;
+        amountToBuy = Math.min(canAfford, canFit);
+    }
+
+    // Sprawdzamy czy nas stać na wybraną ilość
+    let totalCost = b.price * amountToBuy;
+    
+    if (amountToBuy > 0 && money >= totalCost) {
+        money -= totalCost;
+        b.count += amountToBuy;
+        updateDisplay();
+        saveGame();
+    }
+}
+
+// Zmodyfikuj też pętlę w updateDisplay, żeby przycisk "Kup" reagował na buyMode:
+// Wewnątrz pętli for w updateDisplay zamień przycisk na ten:
+// <button onclick="buyBuilding('${key}')">Kup ${buyMode === 'max' ? 'Max' : 'x' + buyMode}</button>
+
 // 1. ZAPISYWANIE I WCZYTYWANIE (System zapisu)
 function saveGame() {
     localStorage.setItem('clickerSave', JSON.stringify({money, countryData}));
