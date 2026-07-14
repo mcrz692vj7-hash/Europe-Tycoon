@@ -22,18 +22,59 @@ function setBuyMode(mode) {
     updateDisplay();
 }
 
+// 1. TYLKO JEDNA, POPRAWNA FUNKCJA KUPOWANIA
 function buyBuilding(type) {
     let b = countryData.buildings[type];
-    
-    // Obliczamy ile faktycznie możemy kupić w zależności od trybu
     let amountToBuy = buyMode;
     
     if (buyMode === 'max') {
-        // Obliczamy max za ile nas stać i ile mamy miejsca do limitu
         let canAfford = Math.floor(money / b.price);
         let canFit = b.max - b.count;
         amountToBuy = Math.min(canAfford, canFit);
     }
+
+    let totalCost = b.price * amountToBuy;
+    
+    if (amountToBuy > 0 && money >= totalCost) {
+        money -= totalCost;
+        b.count += amountToBuy;
+        saveGame();
+        updateDisplay();
+    }
+}
+
+// 2. NAPRAWIONA FUNKCJA DISPLAY (Z poprawną obsługą przycisków)
+function updateDisplay() {
+    const moneyElement = document.getElementById('money');
+    const incomeElement = document.getElementById('income-display');
+    const tbody = document.getElementById('building-body');
+
+    if (moneyElement) moneyElement.innerText = `Pieniądze: ${Math.floor(money).toLocaleString()} zł`;
+    if (incomeElement) incomeElement.innerText = `Zarobek: ${Math.floor(getPassiveIncome()).toLocaleString()} zł/s`;
+    
+    if (tbody) {
+        tbody.innerHTML = '';
+        for (let key in countryData.buildings) {
+            let b = countryData.buildings[key];
+            let amountToShow = buyMode === 'max' ? (b.max - b.count) : buyMode;
+            let totalCost = b.price * amountToShow;
+            
+            // Przycisk jest zablokowany, jeśli nie stać nas na wybraną ilość
+            let isDisabled = (money < totalCost || b.count >= b.max);
+            
+            tbody.innerHTML += `
+                <tr>
+                    <td>${b.name}</td>
+                    <td>${b.price.toLocaleString()} zł</td>
+                    <td>${b.count} / ${b.max}</td>
+                    <td><button onclick="buyBuilding('${key}')" ${isDisabled ? 'disabled' : ''}>
+                        Kup ${buyMode === 'max' ? 'Max' : 'x' + buyMode}
+                    </button></td>
+                </tr>
+            `;
+        }
+    }
+}
 
     // Sprawdzamy czy nas stać na wybraną ilość
     let totalCost = b.price * amountToBuy;
@@ -49,34 +90,6 @@ function buyBuilding(type) {
 // Zmodyfikuj też pętlę w updateDisplay, żeby przycisk "Kup" reagował na buyMode:
 // Wewnątrz pętli for w updateDisplay zamień przycisk na ten:
 // <button onclick="buyBuilding('${key}')">Kup ${buyMode === 'max' ? 'Max' : 'x' + buyMode}</button>
-
-function buyBuilding(type) {
-    let b = countryData.buildings[type];
-    
-    // Obliczamy ile faktycznie chcemy kupić
-    let amountToBuy = buyMode;
-    
-    if (buyMode === 'max') {
-        // Liczymy ile nas stać i ile mamy miejsca do limitu
-        let canAfford = Math.floor(money / b.price);
-        let canFit = b.max - b.count;
-        amountToBuy = Math.min(canAfford, canFit);
-    }
-
-    // Obliczamy koszt (dla 'max' koszt to cena * ilość, którą realnie kupujemy)
-    let totalCost = b.price * amountToBuy;
-    
-    // Logika zakupu
-    if (amountToBuy > 0 && money >= totalCost) {
-        money -= totalCost;
-        b.count += amountToBuy;
-        console.log(`Kupiono ${amountToBuy} sztuk ${b.name}`);
-        saveGame();
-        updateDisplay();
-    } else {
-        console.log("Nie stać Cię lub osiągnięto limit!");
-    }
-}
 
 // 1. ZAPISYWANIE I WCZYTYWANIE (System zapisu)
 function saveGame() {
@@ -132,15 +145,6 @@ function updateDisplay() {
                 </tr>
             `;
         }
-    }
-}
-
-function buyBuilding(type) {
-    let b = countryData.buildings[type];
-    if (money >= b.price && b.count < b.max) {
-        money -= b.price;
-        b.count++;
-        updateDisplay();
     }
 }
 
