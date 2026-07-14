@@ -95,3 +95,10 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 });
+
+// Usuwamy stare próby podpięcia i robimy to bezpośrednio
+document.getElementById('clickBtn').addEventListener('click', function() {
+    money += clickValue;
+    console.log("Dodano pieniądze, nowa suma: " + money); // Zobaczysz to w konsoli F12
+    updateDisplay();
+});
