@@ -46,29 +46,30 @@ setInterval(() => {
 }, 1000);
 
 function updateDisplay() {
-    document.getElementById('money').innerText = `Pieniądze: ${money.toLocaleString()} zł`;
-    document.getElementById('income-display').innerText = `Zarobek: ${getPassiveIncome().toLocaleString()} zł/s`;
-    
+    // Sprawdź czy element istnieje w HTML
+    const moneyElement = document.getElementById('money');
+    const incomeElement = document.getElementById('income-display');
     const tbody = document.getElementById('building-body');
-    tbody.innerHTML = '';
+
+    if (moneyElement) moneyElement.innerText = `Pieniądze: ${Math.floor(money).toLocaleString()} zł`;
+    if (incomeElement) incomeElement.innerText = `Zarobek: ${Math.floor(getPassiveIncome()).toLocaleString()} zł/s`;
     
-    for (let key in countryData.buildings) {
-        let b = countryData.buildings[key];
-        tbody.innerHTML += `
-            <tr>
-                <td>${b.name}</td>
-                <td>${b.price.toLocaleString()} zł</td>
-                <td>${b.count} / ${b.max}</td>
-                <td><button onclick="buyBuilding('${key}')" ${money < b.price || b.count >= b.max ? 'disabled' : ''}>Kup</button></td>
-            </tr>
-        `;
+    if (tbody) {
+        tbody.innerHTML = '';
+        for (let key in countryData.buildings) {
+            let b = countryData.buildings[key];
+            // Używamy toLocaleString tylko na liczbach
+            tbody.innerHTML += `
+                <tr>
+                    <td>${b.name}</td>
+                    <td>${b.price.toLocaleString()} zł</td>
+                    <td>${b.count} / ${b.max}</td>
+                    <td><button onclick="buyBuilding('${key}')" ${money < b.price || b.count >= b.max ? 'disabled' : ''}>Kup</button></td>
+                </tr>
+            `;
+        }
     }
 }
-
-document.getElementById('clickBtn').onclick = () => {
-    money += clickValue;
-    updateDisplay();
-};
 
 function buyBuilding(type) {
     let b = countryData.buildings[type];
