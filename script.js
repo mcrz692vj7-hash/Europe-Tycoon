@@ -4,6 +4,9 @@
     let money = 0;
     const clickValue = 0.5;
 
+    let prestigePoints = 0; // Punkty za reset
+let governmentShares = 0; // Udziały (procent bonusu)
+
     let countryData = {
         buildings: {
             smallBusiness: { name: "Mały biznes", count: 0, max: 3800, price: 1000, income: 50 },
