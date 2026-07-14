@@ -50,6 +50,34 @@ function buyBuilding(type) {
 // Wewnątrz pętli for w updateDisplay zamień przycisk na ten:
 // <button onclick="buyBuilding('${key}')">Kup ${buyMode === 'max' ? 'Max' : 'x' + buyMode}</button>
 
+function buyBuilding(type) {
+    let b = countryData.buildings[type];
+    
+    // Obliczamy ile faktycznie chcemy kupić
+    let amountToBuy = buyMode;
+    
+    if (buyMode === 'max') {
+        // Liczymy ile nas stać i ile mamy miejsca do limitu
+        let canAfford = Math.floor(money / b.price);
+        let canFit = b.max - b.count;
+        amountToBuy = Math.min(canAfford, canFit);
+    }
+
+    // Obliczamy koszt (dla 'max' koszt to cena * ilość, którą realnie kupujemy)
+    let totalCost = b.price * amountToBuy;
+    
+    // Logika zakupu
+    if (amountToBuy > 0 && money >= totalCost) {
+        money -= totalCost;
+        b.count += amountToBuy;
+        console.log(`Kupiono ${amountToBuy} sztuk ${b.name}`);
+        saveGame();
+        updateDisplay();
+    } else {
+        console.log("Nie stać Cię lub osiągnięto limit!");
+    }
+}
+
 // 1. ZAPISYWANIE I WCZYTYWANIE (System zapisu)
 function saveGame() {
     localStorage.setItem('clickerSave', JSON.stringify({money, countryData}));
