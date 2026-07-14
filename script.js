@@ -83,3 +83,15 @@ function buyBuilding(type) {
 // Przy starcie wczytaj dane
 loadGame();
 updateDisplay();
+
+// Podłączenie funkcji do przycisku klikania
+document.addEventListener('DOMContentLoaded', () => {
+    const clickBtn = document.getElementById('clickBtn');
+    if (clickBtn) {
+        clickBtn.onclick = () => {
+            money += clickValue;
+            updateDisplay();
+            saveGame(); // Automatyczny zapis po każdym kliknięciu
+        };
+    }
+});
