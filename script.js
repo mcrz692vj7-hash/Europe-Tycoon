@@ -96,6 +96,17 @@ function getPassiveIncome() {
                     Kup ${buyMode === 'max' ? 'Max' : 'x' + buyMode}
                 </button></td>
             </tr>`;
+
+            // Wewnątrz updateDisplay, np. pod pętlą budynków:
+tbody.innerHTML += `
+    <tr>
+        <td colspan="4">
+            <button onclick="buyShares()">Kup Udział (1 mld zł) - Posiadasz: ${governmentShares}</button>
+            <button onclick="prestige()" style="background-color: red; color: white;">PRESTIŻ (+${Math.floor(money/10000000)} pkt)</button>
+        </td>
+    </tr>
+`;
+            
         }
     }
 
