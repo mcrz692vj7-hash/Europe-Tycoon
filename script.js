@@ -1,5 +1,5 @@
 let money = 0;
-let clickValue = 0.5;
+let clickValue = 5.0;
 
 let countryData = {
     name: "Polska",
