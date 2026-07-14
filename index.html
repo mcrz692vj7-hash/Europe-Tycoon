@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kliker Imperium</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="game-container">
+        <h1>Imperium Europy: <span id="country-name">Polska</span></h1>
+        <h2 id="money">Pieniądze: 0.00 zł</h2>
+        
+        <button id="clickBtn">KLIKNIJ (0.5 zł)</button>
+        
+        <div id="shop">
+            <h3>Sklep</h3>
+            <table id="building-table">
+                <thead>
+                    <tr>
+                        <th>Budynek</th>
+                        <th>Cena</th>
+                        <th>Ilość</th>
+                        <th>Akcja</th>
+                    </tr>
+                </thead>
+                <tbody id="building-body">
+                    <!-- Tutaj JavaScript będzie wstawiał zawartość -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Ładowanie skryptu na samym końcu, żeby strona działała poprawnie -->
+    <script src="script.js"></script>
+</body>
+</html>
