@@ -59,7 +59,7 @@
       const list = this.$('#buildingList');
       const { buildings } = window.ET_DATA;
       list.innerHTML = buildings.map(b => {
-        const owned = this.game.state.buildings[b.id],
+        const owned = this.game.currentBuildings[b.id],
               income = this.game.getBuildingIncome(b),
               unlocked = this.game.isBuildingUnlocked(b),
               buyable = unlocked ? this.game.purchasable(b, this.game.state.selectedQuantity) : 0,
