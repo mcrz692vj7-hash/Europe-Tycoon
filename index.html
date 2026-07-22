@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0a1020" />
+    <title>Europe Tycoon — Alpha 0.3</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/map.css" />
+    <link rel="stylesheet" href="css/part3.css" />
+    <script defer src="js/data.js"></script>
+    <script defer src="js/i18n.js"></script>
+    <script defer src="js/part3.js"></script>
+    <script defer src="js/storage.js"></script>
+    <script defer src="js/game.js"></script>
+    <script defer src="js/ui.js"></script>
+    <script defer src="js/app.js"></script>
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#" aria-label="Europe Tycoon">
+          <span class="brand-mark">€</span>
+          <span><strong>EUROPE</strong> TYCOON <small>ALPHA 0.3</small></span>
+        </a>
+        <div class="topbar-actions">
+          <button class="icon-button" id="languageButton" type="button" title="Change language">PL</button>
+          <button class="icon-button" id="resetButton" type="button" title="Reset save" data-i18n-title="resetSave">↻</button>
+        </div>
+      </header>
+
+      <section class="country-banner" aria-label="Current country">
+        <div class="country-title"><span class="flag">🇵🇱</span><div><p data-i18n="currentCountry">Aktualny kraj</p><h1 data-i18n="poland">Polska</h1></div></div>
+          <div class="country-data">
+          <div><span data-i18n="population">Ludność</span><strong>37.5M</strong></div>
+          <div><span data-i18n="gdp">PKB</span><strong>€0.9T</strong></div>
+          <div><span data-i18n="countryBonus">Bonus kraju</span><strong>+10% 🌾</strong></div>
+            <div class="completion"><span data-i18n="completion">Ukończenie</span><strong id="completionText">0.00%</strong><i><b id="completionBar"></b></i></div>
+          </div>
+        </section>
+
+      <section class="development-panel" aria-label="Poland development">
+        <div><p data-i18n="polishFocus">Plan rozwoju Polski</p><strong id="developmentStage">1</strong><span data-i18n="developmentStage">Etap rozwoju</span></div>
+        <div><p data-i18n="unlockedBuildings">Odblokowane branże</p><strong id="unlockedBuildings">1 / 7</strong><span id="nextUnlockText"></span></div>
+        <div><p data-i18n="countryBonus">Bonus kraju</p><strong>+10%</strong><span>🌾 <span data-i18n="farm">Farma</span></span></div>
+      </section>
+
+      <section class="economy-strip" aria-label="Economy summary">
+        <article><span data-i18n="cash">Gotówka</span><strong id="cashValue">0 zł</strong></article>
+        <article><span data-i18n="incomePerSecond">Dochód / s</span><strong id="incomeValue">+0 zł/s</strong></article>
+        <article><span data-i18n="clickPower">Kliknięcie</span><strong id="clickValue">+0.50 zł</strong></article>
+        <article><span data-i18n="playTime">Czas gry</span><strong id="playTimeValue">0m 0s</strong></article>
+      </section>
+
+      <section class="game-grid">
+        <aside class="side-panel">
+          <div class="panel-heading"><p data-i18n="clickUpgrades">Ulepszenia kliknięcia</p><span id="upgradeLevel">0 / 6</span></div>
+          <div id="upgradeList" class="upgrade-list"></div>
+          <div class="panel-heading stats-heading"><p data-i18n="statistics">Statystyki</p></div>
+          <dl class="stats-list">
+            <div><dt data-i18n="totalClicks">Łącznie kliknięć</dt><dd id="totalClicks">0</dd></div>
+            <div><dt data-i18n="totalEarned">Łącznie zarobiono</dt><dd id="totalEarned">0 zł</dd></div>
+            <div><dt data-i18n="buildingsBought">Kupione budynki</dt><dd id="buildingsBought">0</dd></div>
+            <div><dt data-i18n="bestCash">Najwięcej gotówki</dt><dd id="bestCash">0 zł</dd></div>
+          </dl>
+        </aside>
+
+        <section class="clicker-panel" aria-label="Clicker">
+          <p class="eyebrow" data-i18n="buildTheEconomy">Buduj gospodarkę Polski</p>
+          <h2 data-i18n="makeYourMove">Wykonaj swój ruch</h2>
+          <p class="clicker-copy" data-i18n="clickHint">Klikaj, inwestuj w firmy i przejmij całą gospodarkę.</p>
+          <button class="click-button" id="clickButton" type="button" aria-label="Earn money"><span>✦</span><strong data-i18n="invest">INWESTUJ</strong><small id="clickButtonValue">+0.50 zł</small></button>
+          <div class="click-area" id="clickArea" aria-hidden="true"></div>
+          <p class="save-status" id="saveStatus" data-i18n="saving">Zapisywanie…</p>
+        </section>
+
+        <section class="buildings-panel">
+          <div class="buildings-header">
+            <div><p class="eyebrow" data-i18n="economy">Gospodarka</p><h2 data-i18n="buildings">Budynki</h2></div>
+            <div class="buy-modes" role="group" aria-label="Purchase quantity">
+              <button type="button" data-quantity="1">×1</button><button type="button" data-quantity="10">×10</button><button type="button" data-quantity="100">×100</button><button type="button" data-quantity="1000">×1000</button><button type="button" data-quantity="max" data-i18n="max">MAX</button>
+            </div>
+          </div>
+          <p class="purchase-note" id="purchaseNote"></p>
+          <div id="buildingList" class="building-list"></div>
+        </section>
+      </section>
+
+      <section class="map-panel" aria-label="Europe map">
+        <div class="map-copy">
+          <p class="eyebrow" data-i18n="europeMap">Mapa Europy</p>
+          <h2 data-i18n="licenses">Licencje regionalne</h2>
+          <p data-i18n="mapHint">Polska jest centrum Twojego imperium. Kolejne kraje odblokujesz w następnych aktualizacjach.</p>
+          <div class="map-legend"><span><i class="active"></i><b data-i18n="activeCountry">Aktywny kraj</b></span><span><i></i><b data-i18n="lockedCountry">Zablokowany</b></span></div>
+          <div class="license-card"><span id="licenseFlag">🇨🇿</span><div><small data-i18n="nextLicense">Następna licencja</small><strong id="licenseName">Czechy</strong><em id="licenseCost">10 000 000 zł</em></div></div>
+        </div>
+        <div class="map-wrap">
+          <svg class="europe-map" viewBox="0 0 700 370" role="img" aria-label="Stylized interactive map of Europe">
+            <path class="sea" d="M20,25H680V345H20Z" />
+            <g class="country-shape locked" data-country="norway"><path d="M217 42l25 9-8 67-22 38-14-10 16-49z"/><text x="213" y="106">NO</text></g>
+            <g class="country-shape locked" data-country="germany"><path d="M316 153l55 1 17 35-21 48-51-3-15-38z"/><text x="338" y="196">DE</text></g>
+            <g class="country-shape locked" data-country="france"><path d="M242 191l55 12 12 51-42 35-45-26z"/><text x="263" y="246">FR</text></g>
+            <g class="country-shape active" data-country="poland"><path d="M389 154l59 7 5 46-42 23-35-19z"/><text x="406" y="193">PL</text></g>
+            <g class="country-shape locked" data-country="czechia"><path d="M364 226l43 1 10 19-28 14-32-11z"/><text x="380" y="247">CZ</text></g>
+            <g class="country-shape locked" data-country="italy"><path d="M339 267l31 11 17 41-12 20-12-42-32-8z"/><text x="357" y="286">IT</text></g>
+            <g class="country-shape locked" data-country="spain"><path d="M163 250l63-2 20 35-28 26-57-17z"/><text x="190" y="282">ES</text></g>
+          </svg>
+          <p id="mapSelection" class="map-selection" data-i18n="mapSelectedPoland">🇵🇱 Polska — aktywny kraj</p>
+        </div>
+      </section>
+    </main>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>
