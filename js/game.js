@@ -1,19 +1,30 @@
 (() => {
   const { buildings, clickUpgrades, countries } = window.ET_DATA;
 
-  const initialState = () => ({
-    version: window.ET_DATA.version,
-    language: "pl",
-    cash: 0,
-    clickPower: 0.5,
-    selectedQuantity: 1,
-    activeCountry: window.ET_DATA.activeCountry || "poland",
-    unlockedCountries: Object.keys(countries).filter(id => countries[id].unlocked),
-    buildings: Object.fromEntries(buildings.map(b => [b.id, 0])),
-    upgrades: [],
-    stats: { clicks: 0, earned: 0, buildingsBought: 0, bestCash: 0, playSeconds: 0 },
-    lastSavedAt: Date.now()
-  });
+  // Tworzy pusty obiekt budynków (wszystkie po 0) dla danego kraju
+  const createEmptyBuildings = () => Object.fromEntries(buildings.map(b => [b.id, 0]));
+
+  const initialState = () => {
+    const unlocked = Object.keys(countries).filter(id => countries[id].unlocked);
+    const countryBuildings = {};
+    Object.keys(countries).forEach(id => {
+      countryBuildings[id] = createEmptyBuildings();
+    });
+
+    return {
+      version: window.ET_DATA.version,
+      language: "pl",
+      cash: 0,
+      clickPower: 0.5,
+      selectedQuantity: 1,
+      activeCountry: window.ET_DATA.activeCountry || "poland",
+      unlockedCountries: unlocked,
+      countryBuildings: countryBuildings, // Osobne budynki dla każdego kraju!
+      upgrades: [],
+      stats: { clicks: 0, earned: 0, buildingsBought: 0, bestCash: 0, playSeconds: 0 },
+      lastSavedAt: Date.now()
+    };
+  };
 
   class Game {
     constructor() {
@@ -24,26 +35,66 @@
     hydrate(saved) {
       const base = initialState();
       if (!saved || saved.version !== base.version) return base;
+
+      // Migracja starego zapisu (jeśli ktoś miał budynki w starym formacie)
+      let restoredBuildings = base.countryBuildings;
+      if (saved.countryBuildings) {
+        Object.keys(base.countryBuildings).forEach(cId => {
+          restoredBuildings[cId] = {
+            ...base.countryBuildings[cId],
+            ...(saved.countryBuildings[cId] || {})
+          };
+        });
+      } else if (saved.buildings) {
+        // Przeniesienie dotychczasowych budynków do Polski
+        restoredBuildings.poland = { ...base.countryBuildings.poland, ...saved.buildings };
+      }
+
       return {
         ...base,
         ...saved,
         activeCountry: saved.activeCountry || base.activeCountry,
         unlockedCountries: Array.isArray(saved.unlockedCountries) ? saved.unlockedCountries : base.unlockedCountries,
-        buildings: { ...base.buildings, ...saved.buildings },
+        countryBuildings: restoredBuildings,
         upgrades: Array.isArray(saved.upgrades) ? saved.upgrades : [],
         stats: { ...base.stats, ...saved.stats }
       };
     }
 
-    // Pobiera konfigurację aktualnie wybranego kraju
     get currentCountry() {
       return countries[this.state.activeCountry] || countries.poland;
     }
 
-    get incomePerSecond() {
-      return buildings.reduce((sum, b) => sum + this.state.buildings[b.id] * this.getBuildingIncome(b), 0);
+    // Posiadane budynki w AKTYWNYM kraju
+    get currentBuildings() {
+      if (!this.state.countryBuildings[this.state.activeCountry]) {
+        this.state.countryBuildings[this.state.activeCountry] = Object.fromEntries(buildings.map(b => [b.id, 0]));
+      }
+      return this.state.countryBuildings[this.state.activeCountry];
     }
 
+    // Łączny dochód ze WSZYSTKICH odblokowanych krajów jednocześnie!
+    get incomePerSecond() {
+      let totalIncome = 0;
+
+      this.state.unlockedCountries.forEach(countryId => {
+        const countryConfig = countries[countryId];
+        const countryBldgs = this.state.countryBuildings[countryId];
+        if (!countryConfig || !countryBldgs) return;
+
+        buildings.forEach(b => {
+          const owned = countryBldgs[b.id] || 0;
+          if (owned > 0) {
+            const multiplier = (countryConfig.bonus && countryConfig.bonus.building === b.id) ? countryConfig.bonus.multiplier : 1;
+            totalIncome += owned * (b.income * multiplier);
+          }
+        });
+      });
+
+      return totalIncome;
+    }
+
+    // Dochód z konkretnego budynku w AKTYWNYM kraju
     getBuildingIncome(building) {
       const countryBonus = this.currentCountry.bonus;
       const multiplier = (countryBonus && countryBonus.building === building.id) ? countryBonus.multiplier : 1;
@@ -51,50 +102,44 @@
     }
 
     get completion() {
-      const owned = buildings.reduce((sum, b) => sum + this.state.buildings[b.id], 0);
+      const owned = buildings.reduce((sum, b) => sum + this.currentBuildings[b.id], 0);
       const limits = buildings.reduce((sum, b) => sum + b.limit, 0);
       return (owned / limits) * 100;
     }
 
     isBuildingUnlocked(building) {
-      return !building.unlock || this.state.buildings[building.unlock.building] >= building.unlock.amount;
+      return !building.unlock || this.currentBuildings[building.unlock.building] >= building.unlock.amount;
     }
 
     unlockedBuildingCount() {
       return buildings.filter(building => this.isBuildingUnlocked(building)).length;
     }
 
-    // Mechanika zakupu licencji / odblokowania państwa
     buyCountryLicense(countryId) {
       const targetCountry = countries[countryId];
       if (!targetCountry) return { ok: false, reason: "notFound" };
 
-      // Jeśli jest już odblokowany – po prostu przełączamy
       if (this.state.unlockedCountries.includes(countryId)) {
         this.state.activeCountry = countryId;
         return { ok: true, action: "switched" };
       }
 
-      // Sprawdzenie gotówki
       if (this.state.cash < targetCountry.licenseCost) {
         return { ok: false, reason: "cash", cost: targetCountry.licenseCost };
       }
 
-      // Zakup licencji
       this.state.cash -= targetCountry.licenseCost;
       this.state.unlockedCountries.push(countryId);
+
+      // Inicjalizacja pustej listy budynków dla nowego kraju
+      if (!this.state.countryBuildings[countryId]) {
+        this.state.countryBuildings[countryId] = Object.fromEntries(buildings.map(b => [b.id, 0]));
+      }
+
       this.state.activeCountry = countryId;
       this.save();
 
       return { ok: true, action: "unlocked", countryName: targetCountry.name };
-    }
-
-    switchCountry(countryId) {
-      if (this.state.unlockedCountries.includes(countryId)) {
-        this.state.activeCountry = countryId;
-        return { ok: true };
-      }
-      return { ok: false, reason: "locked" };
     }
 
     addCash(amount) {
@@ -122,7 +167,7 @@
     }
 
     purchasable(building, mode) {
-      const remaining = building.limit - this.state.buildings[building.id];
+      const remaining = building.limit - this.currentBuildings[building.id];
       const affordable = Math.floor((this.state.cash + 1e-8) / building.cost);
       const requested = mode === "max" ? Infinity : Number(mode);
       return Math.max(0, Math.min(remaining, affordable, requested));
@@ -132,9 +177,10 @@
       const b = buildings.find(item => item.id === id);
       if (!this.isBuildingUnlocked(b)) return { ok: false, reason: "locked" };
       const qty = this.purchasable(b, this.state.selectedQuantity);
-      if (!qty) return { ok: false, reason: this.state.buildings[id] >= b.limit ? "limit" : "cash" };
+      if (!qty) return { ok: false, reason: this.currentBuildings[id] >= b.limit ? "limit" : "cash" };
+
       this.state.cash -= qty * b.cost;
-      this.state.buildings[id] += qty;
+      this.currentBuildings[id] += qty; // Dodaje do aktywnego kraju!
       this.state.stats.buildingsBought += qty;
       return { ok: true, qty };
     }
@@ -149,13 +195,8 @@
       return { ok: true };
     }
 
-    setLanguage(language) {
-      this.state.language = language;
-    }
-
-    setQuantity(quantity) {
-      this.state.selectedQuantity = quantity === "max" ? "max" : Number(quantity);
-    }
+    setLanguage(language) { this.state.language = language; }
+    setQuantity(quantity) { this.state.selectedQuantity = quantity === "max" ? "max" : Number(quantity); }
 
     save() {
       this.state.lastSavedAt = Date.now();
