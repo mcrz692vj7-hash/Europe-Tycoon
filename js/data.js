@@ -102,7 +102,7 @@ window.ET_DATA = {
     greece: {
       id: "greece", name: "Grecja", nameKey: "greece", flag: "🇬🇷",
       populationNum: 10.4, population: "10.4M", gdp: "€0.22T",
-      unlocked: false, licenseCost: 750000000000,
+      unlocked: false, licenseCost: 75000000000,
       nextLicense: "finland",
       bonus: { building: "smallBusiness", multiplier: 1.75, text: "+75% 🏪" }
     },
