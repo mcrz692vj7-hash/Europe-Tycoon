@@ -36,20 +36,20 @@ window.ET_DATA = {
   },
   // Bazy limitów ustalone pod Polskę (37.5M):
   buildings: [
-    { id: "smallBusiness", icon: "🏪", nameKey: "smallBusiness", descriptionKey: "smallBusinessDesc", cost: 25, income: 1, baseLimitPerMillion: 100 },  // ~3800 dla PL, ~1090 dla CZ
-    { id: "farm", icon: "🌾", nameKey: "farm", descriptionKey: "farmDesc", cost: 250, income: 8, baseLimitPerMillion: 50, unlock: { building: "smallBusiness", amount: 5 } },             // ~1900 dla PL, ~552 dla CZ
-    { id: "factory", icon: "🏭", nameKey: "factory", descriptionKey: "factoryDesc", cost: 3000, income: 55, baseLimitPerMillion: 24, unlock: { building: "farm", amount: 20 } },              // ~900 dla PL, ~261 dla CZ
-    { id: "mine", icon: "⛏️", nameKey: "mine", descriptionKey: "mineDesc", cost: 25000, income: 340, baseLimitPerMillion: 10, unlock: { building: "factory", amount: 10 } },          // ~400 dla PL, ~116 dla CZ
-    { id: "hotel", icon: "🏨", nameKey: "hotel", descriptionKey: "hotelDesc", cost: 175000, income: 2100, baseLimitPerMillion: 5, unlock: { building: "mine", amount: 10 } },           // ~200 dla PL, ~58 dla CZ
-    { id: "powerPlant", icon: "⚡", nameKey: "powerPlant", descriptionKey: "powerPlantDesc", cost: 1000000, income: 12000, baseLimitPerMillion: 2, unlock: { building: "hotel", amount: 5 } }, // ~100 dla PL, ~29 dla CZ
-    { id: "bank", icon: "🏦", nameKey: "bank", descriptionKey: "bankDesc", cost: 10000000, income: 70000, baseLimitPerMillion: 0.3, unlock: { building: "powerPlant", amount: 5 } }           // ~10 dla PL, ~3 dla CZ
+    { id: "smallBusiness", icon: "🏪", nameKey: "smallBusiness", descriptionKey: "smallBusinessDesc", cost: 25000, income: 250, baseLimitPerMillion: 100 },  // ~3800 dla PL, ~1090 dla CZ
+    { id: "farm", icon: "🌾", nameKey: "farm", descriptionKey: "farmDesc", cost: 100000, income: 1000, baseLimitPerMillion: 50, unlock: { building: "smallBusiness", amount: 5 } },             // ~1900 dla PL, ~552 dla CZ
+    { id: "factory", icon: "🏭", nameKey: "factory", descriptionKey: "factoryDesc", cost: 800000, income: 8000, baseLimitPerMillion: 24, unlock: { building: "farm", amount: 20 } },              // ~900 dla PL, ~261 dla CZ
+    { id: "mine", icon: "⛏️", nameKey: "mine", descriptionKey: "mineDesc", cost: 2500000, income: 25000, baseLimitPerMillion: 10, unlock: { building: "factory", amount: 10 } },          // ~400 dla PL, ~116 dla CZ
+    { id: "hotel", icon: "🏨", nameKey: "hotel", descriptionKey: "hotelDesc", cost: 7000000, income: 70000, baseLimitPerMillion: 5, unlock: { building: "mine", amount: 10 } },           // ~200 dla PL, ~58 dla CZ
+    { id: "powerPlant", icon: "⚡", nameKey: "powerPlant", descriptionKey: "powerPlantDesc", cost: 120000000, income: 1200000, baseLimitPerMillion: 2, unlock: { building: "hotel", amount: 5 } }, // ~100 dla PL, ~29 dla CZ
+    { id: "bank", icon: "🏦", nameKey: "bank", descriptionKey: "bankDesc", cost: 1000000000, income: 10000000, baseLimitPerMillion: 0.3, unlock: { building: "powerPlant", amount: 5 } }           // ~10 dla PL, ~3 dla CZ
   ],
   clickUpgrades: [
     { id: "click1", amount: 1, cost: 50 },
     { id: "click2", amount: 2, cost: 300 },
-    { id: "click5", amount: 5, cost: 1500 },
-    { id: "click10", amount: 10, cost: 10000 },
-    { id: "click25", amount: 25, cost: 75000 },
-    { id: "click50", amount: 50, cost: 500000 }
+    { id: "click5", amount: 5, cost: 1000 },
+    { id: "click10", amount: 10, cost: 5000 },
+    { id: "click25", amount: 25, cost: 25000 },
+    { id: "click50", amount: 50, cost: 50000 }
   ]
 };
