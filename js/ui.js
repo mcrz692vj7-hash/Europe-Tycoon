@@ -58,16 +58,22 @@
     renderBuildings() {
       const list = this.$('#buildingList');
       const { buildings } = window.ET_DATA;
+
       list.innerHTML = buildings.map(b => {
+        // Obliczanie limitu dopasowanego do populacji aktywnego kraju
+        const limit = this.game.getBuildingLimit(b);
         const owned = this.game.currentBuildings[b.id],
               income = this.game.getBuildingIncome(b),
               unlocked = this.game.isBuildingUnlocked(b),
               buyable = unlocked ? this.game.purchasable(b, this.game.state.selectedQuantity) : 0,
               totalCost = buyable * b.cost;
+
         const disabled = buyable === 0 ? "disabled" : "";
         const requirement = b.unlock ? `${this.t("unlockRequirement")}: ${this.number(b.unlock.amount)} × ${this.t(window.ET_DATA.buildings.find(item => item.id === b.unlock.building).nameKey)}` : "";
-        return `<article class="building-card ${owned >= b.limit ? "is-complete" : ""} ${!unlocked ? "is-locked" : ""}"><div class="building-icon">${b.icon}</div><div class="building-info"><h3>${this.t(b.nameKey)}</h3><p>${unlocked ? this.t(b.descriptionKey) : `🔒 ${requirement}`}</p><div class="building-meta"><span>${this.t("income")}: <strong>+${this.money(income)}${this.t("perSecond")}</strong></span><span>${this.t("owned")}: <strong>${this.number(owned)} / ${this.number(b.limit)}</strong></span></div></div><div class="building-buy"><span>${unlocked ? this.t("cost") : this.t("locked")}</span><strong>${unlocked ? (buyable ? this.money(totalCost) : this.money(b.cost)) : "—"}</strong><small>${unlocked ? (buyable > 1 ? `${this.t("buy")} ×${this.number(buyable)}` : `${this.t("buy")} ×1`) : requirement}</small><button type="button" data-building="${b.id}" ${disabled}>${unlocked ? this.t("buy") : this.t("locked")}</button></div></article>`;
+
+        return `<article class="building-card ${owned >= limit ? "is-complete" : ""} ${!unlocked ? "is-locked" : ""}"><div class="building-icon">${b.icon}</div><div class="building-info"><h3>${this.t(b.nameKey)}</h3><p>${unlocked ? this.t(b.descriptionKey) : `🔒 ${requirement}`}</p><div class="building-meta"><span>${this.t("income")}: <strong>+${this.money(income)}${this.t("perSecond")}</strong></span><span>${this.t("owned")}: <strong>${this.number(owned)} / ${this.number(limit)}</strong></span></div></div><div class="building-buy"><span>${unlocked ? this.t("cost") : this.t("locked")}</span><strong>${unlocked ? (buyable ? this.money(totalCost) : this.money(b.cost)) : "—"}</strong><small>${unlocked ? (buyable > 1 ? `${this.t("buy")} ×${this.number(buyable)}` : `${this.t("buy")} ×1`) : requirement}</small><button type="button" data-building="${b.id}" ${disabled}>${unlocked ? this.t("buy") : this.t("locked")}</button></div></article>`;
       }).join("");
+
       this.$$('[data-building]').forEach(button => button.addEventListener('click', () => this.onBuyBuilding(button.dataset.building)));
     }
 
@@ -114,7 +120,6 @@
       const countries = window.ET_DATA.countries;
       const currentCountry = this.game.currentCountry;
 
-      // Obsługa wyznaczenia i renderowania panelu "Następna licencja"
       const nextId = currentCountry.nextLicense;
       const nextCountry = nextId ? countries[nextId] : null;
       const licenseCard = this.$('.license-card');
@@ -131,7 +136,6 @@
         }
       }
 
-      // Aktualizacja stanu wizualnego i zdarzeń na mapie SVG
       this.$$('.country-shape').forEach(shape => {
         const countryId = shape.dataset.country;
         const country = countries[countryId];
@@ -146,7 +150,6 @@
         shape.onclick = () => this.onCountryClick(countryId);
       });
 
-      // Opis zaznaczenia mapy
       this.$('#mapSelection').textContent = `${currentCountry.flag} ${currentCountry.name} — ${this.t("activeCountry") || "aktywny kraj"}`;
     }
 
