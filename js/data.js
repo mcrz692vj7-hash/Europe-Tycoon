@@ -109,14 +109,14 @@ window.ET_DATA = {
     finland: {
       id: "finland", name: "Finlandia", nameKey: "finland", flag: "🇫🇮",
       populationNum: 5.6, population: "5.6M", gdp: "€0.28T",
-      unlocked: false, licenseCost: 2000000000000,
+      unlocked: false, licenseCost: 20000000000,
       nextLicense: "denmark",
       bonus: { building: "powerPlant", multiplier: 1.80, text: "+80% ⚡" }
     },
     denmark: {
       id: "denmark", name: "Dania", nameKey: "denmark", flag: "🇩🇰",
       populationNum: 5.9, population: "5.9M", gdp: "€0.4T",
-      unlocked: false, licenseCost: 5000000000000,
+      unlocked: false, licenseCost: 50000000000,
       nextLicense: null,
       bonus: { building: "mine", multiplier: 2.50, text: "+150% ⛏️" }
     }
