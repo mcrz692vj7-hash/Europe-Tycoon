@@ -36,7 +36,7 @@
       const base = initialState();
       if (!saved || saved.version !== base.version) return base;
 
-      // Migracja starego zapisu (jeśli ktoś miał budynki w starym formacie)
+      // Migracja starego zapisu
       let restoredBuildings = base.countryBuildings;
       if (saved.countryBuildings) {
         Object.keys(base.countryBuildings).forEach(cId => {
@@ -73,6 +73,15 @@
       return this.state.countryBuildings[this.state.activeCountry];
     }
 
+    // Oblicza limit budynku proporcjonalnie do populacji kraju
+    getBuildingLimit(building, countryId = this.state.activeCountry) {
+      const countryConfig = countries[countryId];
+      if (!countryConfig || !countryConfig.populationNum) return building.limit || 100;
+      
+      const calculatedLimit = Math.round(countryConfig.populationNum * building.baseLimitPerMillion);
+      return Math.max(1, calculatedLimit); // Co najmniej 1 budynek
+    }
+
     // Łączny dochód ze WSZYSTKICH odblokowanych krajów jednocześnie!
     get incomePerSecond() {
       let totalIncome = 0;
@@ -103,7 +112,7 @@
 
     get completion() {
       const owned = buildings.reduce((sum, b) => sum + this.currentBuildings[b.id], 0);
-      const limits = buildings.reduce((sum, b) => sum + b.limit, 0);
+      const limits = buildings.reduce((sum, b) => sum + this.getBuildingLimit(b), 0);
       return (owned / limits) * 100;
     }
 
@@ -167,7 +176,8 @@
     }
 
     purchasable(building, mode) {
-      const remaining = building.limit - this.currentBuildings[building.id];
+      const limit = this.getBuildingLimit(building);
+      const remaining = limit - this.currentBuildings[building.id];
       const affordable = Math.floor((this.state.cash + 1e-8) / building.cost);
       const requested = mode === "max" ? Infinity : Number(mode);
       return Math.max(0, Math.min(remaining, affordable, requested));
@@ -176,8 +186,10 @@
     buyBuilding(id) {
       const b = buildings.find(item => item.id === id);
       if (!this.isBuildingUnlocked(b)) return { ok: false, reason: "locked" };
+      
+      const limit = this.getBuildingLimit(b);
       const qty = this.purchasable(b, this.state.selectedQuantity);
-      if (!qty) return { ok: false, reason: this.currentBuildings[id] >= b.limit ? "limit" : "cash" };
+      if (!qty) return { ok: false, reason: this.currentBuildings[id] >= limit ? "limit" : "cash" };
 
       this.state.cash -= qty * b.cost;
       this.currentBuildings[id] += qty; // Dodaje do aktywnego kraju!
